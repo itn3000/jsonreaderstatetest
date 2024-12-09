@@ -11,7 +11,7 @@ public class JsonWriterBench
     [Benchmark]
     public void HighMemory()
     {
-        using var fstm = new MemoryStream();
+        using var fstm = Stream.Null;
         using var jw = new Utf8JsonWriter(fstm, new JsonWriterOptions() { Indented = true });
         JsonSerializer.Serialize(jw, Create(Num));
         static IEnumerable<Hoge> Create(int num)
@@ -26,7 +26,7 @@ public class JsonWriterBench
     [Benchmark]
     public void LowMemory()
     {
-        using var fstm = new MemoryStream();
+        using var fstm = Stream.Null;
         using var jw = new Utf8JsonWriter(fstm, new JsonWriterOptions() { Indented = true });
         jw.WriteStartArray();
         for (int i = 0; i < Num; i++)

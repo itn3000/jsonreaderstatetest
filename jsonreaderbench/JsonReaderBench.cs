@@ -31,6 +31,8 @@ public class JsonReaderBench
     }
     async Task ReadJsonFile(Stream stm)
     {
+        // var reader = PipeReader.Create(stm);
+        // await ReadTask(reader);
         var pipe = new Pipe();
         await Task.WhenAll(WriteTask(pipe.Writer, stm), ReadTask(pipe.Reader));
         static async Task WriteTask(PipeWriter writer, Stream stm)
@@ -84,9 +86,8 @@ public class JsonReaderBench
                                 readerState = jr.CurrentState;
                             }
                         }
-                        catch (JsonException je)
+                        catch (JsonException)
                         {
-                            Console.WriteLine(je);
                             break;
                         }
                     }
@@ -96,7 +97,7 @@ public class JsonReaderBench
                         readerState = jr.CurrentState;
                     }
                 }
-                reader.AdvanceTo(readResult.Buffer.Slice(0, totalRead).End);
+                reader.AdvanceTo(readResult.Buffer.Slice(0, totalRead).End, readResult.Buffer.End);
             }
         }
     }

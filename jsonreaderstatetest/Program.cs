@@ -39,7 +39,9 @@ static void CreateJsonFile2(string filePath, int num)
 async Task ReadJsonFile2(string filePath)
 {
     using var fstm = File.OpenRead(filePath);
-    foreach(var item in JsonSerializer.Deserialize<IEnumerable<Hoge>>(fstm)!)
+    var deserialized = JsonSerializer.Deserialize<IEnumerable<Hoge>>(fstm)!;
+    Console.WriteLine($"deserialized type = {deserialized.GetType()}");
+    foreach(var item in deserialized!)
     {
         if(item.B % 0xfff == 0)
         {
@@ -51,14 +53,16 @@ async Task ReadJsonFile2(string filePath)
 async Task ReadJsonFile(string filePath)
 {
     using var fstm = File.OpenRead(filePath);
-    var pipe = new Pipe();
-    await Task.WhenAll(WriteTask(pipe.Writer, fstm), ReadTask(pipe.Reader));
-    static async Task WriteTask(PipeWriter writer, Stream stm)
-    {
-        using var wstm = writer.AsStream();
-        await stm.CopyToAsync(wstm);
-        await wstm.FlushAsync();
-    }
+    var pipeReader = PipeReader.Create(fstm);
+    await ReadTask(pipeReader);
+    // var pipe = new Pipe();
+    // await Task.WhenAll(WriteTask(pipe.Writer, fstm), ReadTask(pipe.Reader));
+    // static async Task WriteTask(PipeWriter writer, Stream stm)
+    // {
+    //     using var wstm = writer.AsStream();
+    //     await stm.CopyToAsync(wstm);
+    //     await wstm.FlushAsync();
+    // }
 }
 
 async Task ReadTask(PipeReader reader)
@@ -116,7 +120,7 @@ async Task ReadTask(PipeReader reader)
                 }
             }
             Console.WriteLine($"total read: {totalRead}");
-            reader.AdvanceTo(readResult.Buffer.Slice(0, totalRead).End);
+            reader.AdvanceTo(readResult.Buffer.Slice(0, totalRead).End, readResult.Buffer.End);
         }
     }
 }
